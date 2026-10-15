@@ -1,631 +1,620 @@
-# Шпаргалка по командам Kubernetes
+# 🚀 Шпаргалка по командам Kubernetes
 
-## Установка и Настройка
+> Полное руководство по работе с `kubectl` — от установки до продвинутых операций
+
+---
+
+## 📑 Содержание
+
+1. [Установка и настройка](#-установка-и-настройка)
+2. [Основные команды и информация о кластере](#-основные-команды-и-информация-о-кластере)
+3. [Управление подами](#-управление-подами)
+4. [Развертывания и ReplicaSets](#-развертывания-и-replicasets)
+5. [Службы и сетевое взаимодействие](#-службы-и-сетевое-взаимодействие)
+6. [ConfigMaps и секреты](#-configmaps-и-секреты)
+7. [Хранилище и тома](#-хранилище-и-тома)
+8. [Устранение неполадок](#-устранение-неполадок)
+9. [Управление ресурсами](#-управление-ресурсами)
+10. [Расширенные операции](#-расширенные-операции)
+11. [Производительность и мониторинг](#-производительность-и-мониторинг)
+12. [Управление конфигурацией](#-управление-конфигурацией)
+13. [Лучшие практики](#-лучшие-практики)
+
+---
+
+## 📦 Установка и настройка
 
 ### Установка kubectl
 
-```BASH
-________________________
-| # macOS с Homebrew.  |
-| brew install kubectl |
-|______________________|
-_________________________________________________________________
-| #Linux                                                        |
-| curl -LO "https://dl.k8s.io/release/$(curl -L -s              | 
-| https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"                                                       
-| chmod +x kubectl                                              |
-| sudo mv kubectl /usr/local/bin/                               |
-----------------------------------------------------------------
-________________________________
-| # Windows с Chocolatey       |
-| choco install kubernetes-cli |
-_______________________________|
-```
-### Проверка Установки
+**🍎 macOS (Homebrew)**
 
-```BASH
- ______________________________________
-| # Проверить версию kubectl           |
-| kubectl version --client             |
-| # Проверить версии клиента и сервера |
-| kubectl version                      |
-| # Получить информацию о кластере     |
-| kubectl cluster-info                 |
- ______________________________________ 
+```bash
+brew install kubectl
 ```
 
-### Настройка kubectl
+**🐧 Linux**
 
-```BASH
- _______________________________________________________________
-| # Просмотр текущей конфигурации                               |
-| kubectl config view                                           |
-| # Список всех контекстов                                      |
-| kubectl config get-context                                    |
-| # Переключение на контекст                                    |
-| kubectl config use-context my-cluster                         | 
-| # Установка пространства имен по умолчанию                    |
-| kubectl config set-context --current --namespace=my-namespace |
- _______________________________________________________________|
+```bash
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
 ```
 
-## Основные Команды и Информация о Кластере
-### Информация о Кластерe: **kubectl cluster-info**
-```BASH
-# Получить информацию о кластере
+**🪟 Windows (Chocolatey)**
+
+```bash
+choco install kubernetes-cli
+```
+
+### ✅ Проверка установки
+
+```bash
+# Версия клиента
+kubectl version --client
+
+# Версии клиента и сервера
+kubectl version
+
+# Информация о кластере
 kubectl cluster-info
-# Получить конфигурацию кластера
+```
+
+### ⚙️ Настройка kubectl
+
+```bash
+# Просмотр текущей конфигурации
 kubectl config view
-# Проверить доступные ресурсы API
-kubectl api-resources
-# Отобразить поддерживаемые версии API
-kubectl api-versions
-```
-### Управление Узлами: **kubectl get nodes**
-```BASH
-# Список всех узлов
-kubectl get nodes
-# Подробная информация об узлах
-kubectl get nodes -o wide
-# Описать конкретный узел
-kubectl describe node
-# Получить использование ресурсов узла
-kubectl top nodes
-```
-### Операции с Пространствами Имен: **kubectl get namespaces**
-```BASH
-# Список всех пространств имен
-kubectl get namespaces
-# Создать пространство имен
-kubectl create namespace my-namespace
-# Удалить пространство имен
-kubectl delete namespace my-namespace
-# Получить ресурсы в конкретном пространстве имен
-kubectl get all -n my-namespace
-```
 
-## Управление Подами (Pod Management)
-### Создание и Запуск Подов: kubectl run / kubectl create
-
-```BASH
-# Запустить простой под
-kubectl run nginx --image=nginx
-# Создать под из YAML-файла
-kubectl create -f pod.yaml
-# Запустить под с командой
-kubectl run busybox --image=busybox -- echo "Hello World"
-# Создать задание (job)
-kubectl create job hello --image=busybox:1.28 -- echo "Hello World"
-```
-### Просмотр Информации о Подах: **kubectl get pods**
-
-```BASH
-# Список всех подов в пространстве имен по умолчанию
-kubectl get pods
-# Список подов с дополнительными деталями
-kubectl get pods -o wide
-# Список подов во всех пространствах имен
-kubectl get pods --all-namespaces
-# Наблюдение за изменениями статуса пода
-kubectl get pods --watch
-```
-### Детали Пода: **kubectl describe pod**
-```BASH
-# Описать конкретный под
-kubectl describe pod
-# Описать под в конкретном пространстве имен
-kubectl describe pod  -n
-```
-Операции с Подами: kubectl exec / kubectl delete
-Выполнение команд в подах и управление жизненным циклом пода.
-
-# Получить логи пода
-kubectl logs
-# Следить за логами в реальном времени
-kubectl logs -f
-# Выполнить команду в поде
-kubectl exec -it  -- /bin/bash
-# Выполнить команду в конкретном контейнере
-kubectl exec -it  -c  -- sh
-# Удалить под
-kubectl delete pod
-# Принудительное удаление пода
-kubectl delete pod  --grace-period=0 --force
-Развертывания (Deployments) и ReplicaSets
-Создание Развертываний: kubectl create deployment
-Декларативное развертывание и управление приложениями.
-
-# Создать развертывание
-kubectl create deployment nginx --image=nginx
-# Создать развертывание с репликами
-kubectl create deployment webapp --image=nginx --
-replicas=3
-# Создать из YAML-файла
-kubectl apply -f deployment.yaml
-# Открыть развертывание как службу
-kubectl expose deployment nginx --port=80 --
-type=LoadBalancer
-
-Управление Развертываниями: kubectl get deployments
-Просмотр и контроль статуса и конфигурации развертывания.
-
-# Список развертываний
-kubectl get deployments
-# Описать развертывание
-kubectl describe deployment
-# Редактировать развертывание
-kubectl edit deployment
-# Удалить развертывание
-kubectl delete deployment
-Масштабирование: kubectl scale
-Настройка количества запущенных реплик.
-
-# Масштабировать развертывание
-kubectl scale deployment nginx --replicas=5
-# Масштабировать ReplicaSet
-kubectl scale rs  --replicas=3
-# Автомасштабирование развертывания
-kubectl autoscale deployment nginx --min=2 --max=10 --
-cpu-percent=80
-
-Поэтапные Обновления: kubectl rollout
-Управление обновлениями развертываний и их откатами.
-
-# Проверить статус развертывания
-kubectl rollout status deployment/nginx
-# Просмотр истории развертывания
-kubectl rollout history deployment/nginx
-# Откат к предыдущей версии
-kubectl rollout undo deployment/nginx
-# Откат к определенной ревизии
-kubectl rollout undo deployment/nginx --to-revision=2
-Службы (Services) и Сетевое Взаимодействие
-Открытие Служб: kubectl expose
-Предоставление доступа к приложениям через сетевые службы.
-
-# Открыть развертывание как службу ClusterIP
-kubectl expose deployment nginx --port=80
-# Открыть как службу NodePort
-kubectl expose deployment nginx --port=80 --
-type=NodePort
-# Открыть как LoadBalancer
-kubectl expose deployment nginx --port=80 --
-type=LoadBalancer
-# Создать службу из YAML
-kubectl apply -f service.yaml
-
-Обнаружение Служб: kubectl get services
-Список и инспекция служб в вашем кластере.
-
-# Список всех служб
-kubectl get services
-# Список служб с дополнительными деталями
-kubectl get svc -o wide
-# Описать конкретную службу
-kubectl describe service
-# Получить конечные точки службы
-kubectl get endpoints
-Перенаправление Портов: kubectl port-forward
-Доступ к приложениям локально для тестирования и отладки.
-
-# Перенаправить порт пода на локальную машину
-kubectl port-forward pod/ 8080:80
-# Перенаправить порт службы
-kubectl port-forward svc/ 8080:80
-# Перенаправить порт развертывания
-kubectl port-forward deployment/ 8080:80
-# Перенаправить несколько портов
-kubectl port-forward pod/ 8080:80 8443:443
-Управление Ingress
-Управление внешним доступом к службам через маршруты HTTP/HTTPS.
-
-# Список ресурсов Ingress
-kubectl get ingress
-# Описать Ingress
-kubectl describe ingress
-# Создать Ingress из YAML
-kubectl apply -f ingress.yaml
-ConfigMaps и Секреты (Secrets)
-ConfigMaps: kubectl create configmap
-Хранение неконфиденциальных данных конфигурации в парах ключ-значение.
-
-# Создать ConfigMap из литералов
-kubectl create configmap app-config --from-
-literal=database_url=localhost --from-literal=debug=true
-# Создать из файла
-kubectl create configmap app-config --from-
-file=app.properties
-# Создать из каталога
-kubectl create configmap app-config --from-file=config/
-Использование ConfigMap
-Использование ConfigMaps в подах в качестве переменных окружения или томов.
-
-# Просмотр ConfigMap
-kubectl get configmaps
-kubectl describe configmap app-config
-# Получить YAML ConfigMap
-kubectl get configmap app-config -o yaml
-# Редактировать ConfigMap
-kubectl edit configmap app-config
-# Удалить ConfigMap
-kubectl delete configmap app-config
-Секреты (Secrets): kubectl create secret
-Хранение и управление конфиденциальной информацией, такой как пароли и ключи API.
-
-# Создать общий секрет
-kubectl create secret generic db-secret --from-
-literal=username=admin --from-
-literal=password=secret123
-# Создать секрет из файла
-kubectl create secret generic ssl-certs --from-file=tls.crt --
-from-file=tls.key
-# Создать секрет реестра docker
-kubectl create secret docker-registry my-registry --
-docker-server=myregistry.com --docker-username=user -
--docker-password=pass
-Управление Секретами
-Просмотр и управление секретами.
-
-# Список секретов
-kubectl get secrets
-# Описать секрет (значения скрыты)
-kubectl describe secret db-secret
-# Декодировать значения секрета
-kubectl get secret db-secret -o
-jsonpath='{.data.password}' | base64 -d
-# Удалить секрет
-kubectl delete secret db-secret
-Хранилище и Тома (Storage & Volumes)
-Постоянные Тома (Persistent Volumes): kubectl get pv
-Управление ресурсами хранения в масштабе всего кластера.
-
-# Список постоянных томов
-kubectl get pv
-# Описать постоянный том
-kubectl describe pv
-# Создать PV из YAML
-kubectl apply -f persistent-volume.yaml
-# Удалить постоянный том
-kubectl delete pv
-Запросы на Постоянный Том (Persistent Volume Claims): kubectl get pvc
-Запрос ресурсов хранения для подов.
-
-# Список PVC
-kubectl get pvc
-# Описать PVC
-kubectl describe pvc
-# Создать PVC из YAML
-kubectl apply -f pvc.yaml
-# Удалить PVC
-kubectl delete pvc
-Классы Хранения (Storage Classes): kubectl get storageclass
-Определение различных типов хранилищ с различными свойствами.
-
-# Список классов хранения
-kubectl get storageclass
-# Описать класс хранения
-kubectl describe storageclass
-# Установить класс хранения по умолчанию
-kubectl patch storageclass  -p '{"metadata":
-{"annotations":{"storageclass.kubernetes.io/is-default-
-class":"true"}}}'
-Операции с Томами
-Работа с различными типами томов в ваших подах.
-
-# Проверить монтирование томов в поде
-kubectl describe pod  | grep -A5 "Mounts:"
-# Список томов в поде
-kubectl get pod  -o yaml | grep -A10 "volumes:"
-Устранение Неполадок и Отладка (Troubleshooting & Debugging)
-Логи и События: kubectl logs / kubectl get events
-Анализ логов приложений и событий кластера для отладки.
-
-# Просмотр логов пода
-kubectl logs
-# Следить за логами в реальном времени
-kubectl logs -f
-# Просмотр логов предыдущего контейнера
-kubectl logs  --previous
-# Просмотр логов конкретного контейнера
-kubectl logs  -c
-# Просмотр событий кластера
-kubectl get events --sort-
-by=.metadata.creationTimestamp
-Инспекция Ресурсов: kubectl describe
-Получение подробной информации о любом ресурсе Kubernetes.
-
-# Описать под
-kubectl describe pod
-# Описать развертывание
-kubectl describe deployment
-# Описать службу
-kubectl describe service
-# Описать узел
-kubectl describe node
-Использование Ресурсов: kubectl top
-Мониторинг потребления ресурсов узлами и подами.
-
-# Использование ресурсов узлами
-kubectl top nodes
-# Использование ресурсов подами
-kubectl top pods
-# Использование ресурсов в пространстве имен
-kubectl top pods -n
-# Сортировка подов по использованию CPU
-kubectl top pods --sort-by=cpu
-Интерактивная Отладка: kubectl exec / kubectl debug
-Доступ к запущенным контейнерам для практического устранения неполадок.
-
-# Выполнить интерактивную оболочку
-kubectl exec -it  -- /bin/bash
-# Отладка с помощью эфемерного контейнера (K8s 1.23+)
-kubectl debug  -it --image=busybox
-# Скопировать файлы из пода
-kubectl cp :/path/to/file ./local-file
-# Скопировать файлы в под
-kubectl cp ./local-file :/path/to/destination
-Управление Ресурсами
-Применение Ресурсов: kubectl apply
-Создание или обновление ресурсов с использованием декларативных конфигурационных файлов.
-
-# Применить один файл
-kubectl apply -f deployment.yaml
-# Применить несколько файлов
-kubectl apply -f deployment.yaml -f service.yaml
-# Применить весь каталог
-kubectl apply -f ./k8s-configs/
-# Применить из URL
-kubectl apply -f https://example.com/manifest.yaml
-# Показать, что будет применено (сухой запуск)
-kubectl apply -f deployment.yaml --dry-run=client -o yaml
-Операции с Ресурсами: kubectl get / kubectl delete
-Список, инспекция и удаление ресурсов Kubernetes.
-
-# Получить все ресурсы в пространстве имен
-kubectl get all
-# Получить ресурсы с пользовательскими столбцами
-kubectl get pods -o custom-
-columns=NAME:.metadata.name,STATUS:.status.phase
-# Получить ресурсы в формате JSON/YAML
-kubectl get deployment nginx -o yaml
-kubectl get pod  -o json
-# Удалить ресурсы
-kubectl delete -f deployment.yaml
-kubectl delete pod,service -l app=nginx
-Редактирование Ресурсов: kubectl edit / kubectl patch
-Прямое изменение существующих ресурсов.
-
-# Редактировать ресурс интерактивно
-kubectl edit deployment
-# Патч ресурса с помощью стратегического слияния
-kubectl patch deployment nginx -p '{"spec":
-{"replicas":3}}'
-# Патч с помощью слияния JSON
-kubectl patch pod  --type='json' -p='[{"op": "replace",
-"path": "/metadata/labels/env", "value": "prod"}]'
-# Полностью заменить ресурс
-kubectl replace -f updated-deployment.yaml
-Валидация Ресурсов: kubectl diff / kubectl explain
-Сравнение конфигураций и понимание схем ресурсов.
-
-# Показать различия перед применением
-kubectl diff -f deployment.yaml
-# Объяснить структуру ресурса
-kubectl explain pod.spec.containers
-# Объяснить с примерами
-kubectl explain deployment --recursive
-# Проверить ресурс без применения
-kubectl apply -f deployment.yaml --dry-run=client --
-validate=true
-Расширенные Операции
-Управление Узлами: kubectl cordon / kubectl drain
-Управление доступностью узлов для обслуживания и обновлений.
-
-# Отметить узел как недоступный для планирования
-kubectl cordon
-# Отметить узел как доступный для планирования
-kubectl uncordon
-# Осушить узел для обслуживания
-kubectl drain  --ignore-daemonsets --delete-emptydir-
-data
-# Добавить "taint" к узлу
-kubectl taint nodes  key=value:NoSchedule
-# Удалить "taint" с узла
-kubectl taint nodes  key:NoSchedule-
-Метки и Аннотации: kubectl label / kubectl annotate
-Добавление метаданных к ресурсам для организации и выбора.
-
-# Добавить метку к ресурсу
-kubectl label pod  environment=production
-# Удалить метку с ресурса
-kubectl label pod  environment-
-# Добавить аннотацию к ресурсу
-kubectl annotate pod  description="Frontend web
-server"
-# Выбрать ресурсы по метке
-kubectl get pods -l environment=production
-kubectl get pods -l 'environment in (production,staging)'
-Прокси и Аутентификация: kubectl proxy / kubectl auth
-Доступ к API кластера и управление аутентификацией.
-
-# Запустить прокси для API Kubernetes
-kubectl proxy --port=8080
-# Проверить, может ли пользователь выполнить действие
-kubectl auth can-i create pods
-kubectl auth can-i '*' '*' --
-as=system:serviceaccount:default:my-sa
-# Выполнить действие от имени пользователя
-kubectl get pods --as=system:serviceaccount:default:my-
-sa
-# Просмотр информации об аутентификации пользователя
-kubectl config view --raw -o jsonpath='{.users[*].name}'
-Вспомогательные Команды
-Дополнительные полезные команды для операций Kubernetes.
-
-# Ожидание условия
-kubectl wait --for=condition=Ready pod/ --timeout=300s
-# Запуск временного пода для тестирования
-kubectl run tmp-pod --rm -i --tty --image=busybox --
-/bin/sh
-# Генерация YAML ресурса без создания
-kubectl create deployment nginx --image=nginx --dry-
-run=client -o yaml
-# Сортировка ресурсов по времени создания
-kubectl get pods --sort-by=.metadata.creationTimestamp
-Производительность и Мониторинг
-Метрики Ресурсов: kubectl top
-Просмотр потребления ресурсов в реальном времени по всему кластеру.
-
-# Использование ресурсов узлами
-kubectl top nodes --sort-by=cpu
-kubectl top nodes --sort-by=memory
-# Использование ресурсов подами
-kubectl top pods --sort-by=cpu
-kubectl top pods --sort-by=memory -A
-# Использование ресурсов контейнерами
-kubectl top pods --containers=true
-# Историческое использование ресурсов (требуется metrics-server)
-kubectl top pods --previous
-Проверки Состояния и Статус
-Мониторинг состояния работоспособности приложений и кластера.
-
-# Проверить статус развертывания
-kubectl rollout status deployment/
-# Проверить готовность пода
-kubectl get pods --field-selector=status.phase=Running
-# Мониторинг квот ресурсов
-kubectl get resourcequota
-kubectl describe resourcequota
-# Проверить состояние компонентов кластера
-kubectl get componentstatuses
-Оптимизация Производительности
-Команды для помощи в оптимизации производительности кластера.
-
-# Просмотр запросов и лимитов ресурсов
-kubectl describe node  | grep -A5 "Allocated resources:"
-# Проверить бюджеты прерывания пода
-kubectl get pdb
-# Просмотр горизонтальных автомасштабировщиков подов
-kubectl get hpa
-# Проверить сетевые политики
-kubectl get networkpolicy
-Резервное Копирование и Восстановление
-Основные команды для резервного копирования и аварийного восстановления кластера.
-
-# Резервное копирование всех ресурсов в пространстве имен
-kubectl get all -o yaml -n  > backup.yaml
-# Экспорт конкретного ресурса
-kubectl get deployment  -o yaml > deployment-
-backup.yaml
-# Список всех ресурсов для резервного копирования
-kubectl api-resources --verbs=list --namespaced -o name
-| xargs -n 1 kubectl get --show-kind --ignore-not-found -n
-Управление Конфигурацией и Контекстом
-Управление Контекстом
-Переключение между различными кластерами и пользователями Kubernetes.
-
-# Просмотр текущего контекста
-kubectl config current-context
 # Список всех контекстов
 kubectl config get-contexts
-# Переключение контекста
-kubectl config use-context
+
+# Переключение на контекст
+kubectl config use-context my-cluster
+
+# Установка пространства имен по умолчанию
+kubectl config set-context --current --namespace=my-namespace
+```
+
+---
+
+## 🌐 Основные команды и информация о кластере
+
+### Информация о кластере
+
+```bash
+kubectl cluster-info              # Информация о кластере
+kubectl config view               # Конфигурация кластера
+kubectl api-resources             # Доступные ресурсы API
+kubectl api-versions              # Поддерживаемые версии API
+```
+
+### Управление узлами
+
+```bash
+kubectl get nodes                 # Список всех узлов
+kubectl get nodes -o wide         # Подробная информация
+kubectl describe node <name>      # Описание узла
+kubectl top nodes                 # Использование ресурсов
+```
+
+### Пространства имен
+
+```bash
+kubectl get namespaces                    # Список пространств имен
+kubectl create namespace my-namespace     # Создать
+kubectl delete namespace my-namespace     # Удалить
+kubectl get all -n my-namespace           # Ресурсы в пространстве имен
+```
+
+---
+
+## 🎯 Управление подами
+
+### Создание и запуск
+
+```bash
+kubectl run nginx --image=nginx                              # Простой под
+kubectl create -f pod.yaml                                   # Из YAML
+kubectl run busybox --image=busybox -- echo "Hello World"    # С командой
+kubectl create job hello --image=busybox:1.28 -- echo "Hello" # Job
+```
+
+### Просмотр информации
+
+```bash
+kubectl get pods                          # Список подов
+kubectl get pods -o wide                  # С деталями
+kubectl get pods --all-namespaces         # Во всех namespace
+kubectl get pods --watch                  # Наблюдение
+kubectl describe pod <name>               # Описание пода
+```
+
+### Операции с подами
+
+```bash
+kubectl logs <pod>                        # Логи пода
+kubectl logs -f <pod>                     # Логи в реальном времени
+kubectl exec -it <pod> -- /bin/bash       # Shell в поде
+kubectl exec -it <pod> -c <container> -- sh  # В конкретном контейнере
+kubectl delete pod <name>                 # Удалить под
+kubectl delete pod <name> --grace-period=0 --force  # Принудительно
+```
+
+---
+
+## 🚢 Развертывания и ReplicaSets
+
+### Создание развертываний
+
+```bash
+kubectl create deployment nginx --image=nginx                    # Создать
+kubectl create deployment webapp --image=nginx --replicas=3      # С репликами
+kubectl apply -f deployment.yaml                                 # Из YAML
+kubectl expose deployment nginx --port=80 --type=LoadBalancer    # Как служба
+```
+
+### Управление развертываниями
+
+```bash
+kubectl get deployments                   # Список
+kubectl describe deployment <name>        # Описание
+kubectl edit deployment <name>            # Редактирование
+kubectl delete deployment <name>          # Удаление
+```
+
+### Масштабирование
+
+```bash
+kubectl scale deployment nginx --replicas=5              # Масштабировать
+kubectl scale rs <name> --replicas=3                     # ReplicaSet
+kubectl autoscale deployment nginx --min=2 --max=10 --cpu-percent=80  # Авто
+```
+
+### Поэтапные обновления
+
+```bash
+kubectl rollout status deployment/nginx              # Статус
+kubectl rollout history deployment/nginx             # История
+kubectl rollout undo deployment/nginx                # Откат
+kubectl rollout undo deployment/nginx --to-revision=2  # К ревизии
+```
+
+---
+
+## 🌍 Службы и сетевое взаимодействие
+
+### Открытие служб
+
+```bash
+kubectl expose deployment nginx --port=80                    # ClusterIP
+kubectl expose deployment nginx --port=80 --type=NodePort    # NodePort
+kubectl expose deployment nginx --port=80 --type=LoadBalancer # LoadBalancer
+kubectl apply -f service.yaml                                # Из YAML
+```
+
+### Обнаружение служб
+
+```bash
+kubectl get services              # Список служб
+kubectl get svc -o wide           # С деталями
+kubectl describe service <name>   # Описание
+kubectl get endpoints             # Конечные точки
+```
+
+### Перенаправление портов
+
+```bash
+kubectl port-forward pod/<name> 8080:80              # Порт пода
+kubectl port-forward svc/<name> 8080:80              # Порт службы
+kubectl port-forward deployment/<name> 8080:80       # Порт deployment
+kubectl port-forward pod/<name> 8080:80 8443:443     # Несколько портов
+```
+
+### Управление Ingress
+
+```bash
+kubectl get ingress              # Список Ingress
+kubectl describe ingress <name>  # Описание
+kubectl apply -f ingress.yaml    # Создать из YAML
+```
+
+---
+
+## 🔐 ConfigMaps и секреты
+
+### ConfigMaps
+
+```bash
+# Создать из литералов
+kubectl create configmap app-config --from-literal=database_url=localhost --from-literal=debug=true
+
+# Создать из файла
+kubectl create configmap app-config --from-file=app.properties
+
+# Создать из каталога
+kubectl create configmap app-config --from-file=config/
+
+# Просмотр
+kubectl get configmaps
+kubectl describe configmap app-config
+kubectl get configmap app-config -o yaml
+
+# Редактирование и удаление
+kubectl edit configmap app-config
+kubectl delete configmap app-config
+```
+
+### Секреты
+
+```bash
+# Общий секрет
+kubectl create secret generic db-secret --from-literal=username=admin --from-literal=password=secret123
+
+# Из файла
+kubectl create secret generic ssl-certs --from-file=tls.crt --from-file=tls.key
+
+# Docker registry
+kubectl create secret docker-registry my-registry --docker-server=myregistry.com --docker-username=user --docker-password=pass
+
+# Просмотр
+kubectl get secrets
+kubectl describe secret db-secret
+
+# Декодировать значение
+kubectl get secret db-secret -o jsonpath='{.data.password}' | base64 -d
+
+# Удалить
+kubectl delete secret db-secret
+```
+
+---
+
+## 💾 Хранилище и тома
+
+### Persistent Volumes (PV)
+
+```bash
+kubectl get pv                       # Список
+kubectl describe pv <name>           # Описание
+kubectl apply -f persistent-volume.yaml  # Создать из YAML
+kubectl delete pv <name>             # Удалить
+```
+
+### Persistent Volume Claims (PVC)
+
+```bash
+kubectl get pvc              # Список
+kubectl describe pvc <name>  # Описание
+kubectl apply -f pvc.yaml    # Создать из YAML
+kubectl delete pvc <name>    # Удалить
+```
+
+### Storage Classes
+
+```bash
+kubectl get storageclass              # Список
+kubectl describe storageclass <name>  # Описание
+
+# Установить по умолчанию
+kubectl patch storageclass <name> -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+```
+
+### Операции с томами
+
+```bash
+kubectl describe pod <name> | grep -A5 "Mounts:"         # Монтирование
+kubectl get pod <name> -o yaml | grep -A10 "volumes:"     # Тома в поде
+```
+
+---
+
+## 🔍 Устранение неполадок
+
+### Логи и события
+
+```bash
+kubectl logs <pod>                                   # Логи пода
+kubectl logs -f <pod>                                # В реальном времени
+kubectl logs <pod> --previous                        # Предыдущий контейнер
+kubectl logs <pod> -c <container>                    # Конкретный контейнер
+kubectl get events --sort-by=.metadata.creationTimestamp  # События
+```
+
+### Инспекция ресурсов
+
+```bash
+kubectl describe pod <name>          # Под
+kubectl describe deployment <name>   # Развертывание
+kubectl describe service <name>      # Служба
+kubectl describe node <name>         # Узел
+```
+
+### Использование ресурсов
+
+```bash
+kubectl top nodes                    # Узлы
+kubectl top pods                     # Поды
+kubectl top pods -n <namespace>      # В пространстве имен
+kubectl top pods --sort-by=cpu       # Сортировка по CPU
+```
+
+### Интерактивная отладка
+
+```bash
+kubectl exec -it <pod> -- /bin/bash                          # Shell
+kubectl debug <pod> -it --image=busybox                      # Эфемерный контейнер
+kubectl cp <pod>:/path/to/file ./local-file                  # Копировать из пода
+kubectl cp ./local-file <pod>:/path/to/destination           # Копировать в под
+```
+
+---
+
+## 🛠 Управление ресурсами
+
+### Применение ресурсов
+
+```bash
+kubectl apply -f deployment.yaml                             # Один файл
+kubectl apply -f deployment.yaml -f service.yaml             # Несколько файлов
+kubectl apply -f ./k8s-configs/                              # Каталог
+kubectl apply -f https://example.com/manifest.yaml           # Из URL
+kubectl apply -f deployment.yaml --dry-run=client -o yaml    # Dry-run
+```
+
+### Операции с ресурсами
+
+```bash
+kubectl get all                                              # Все ресурсы
+kubectl get pods -o custom-columns=NAME:.metadata.name,STATUS:.status.phase
+kubectl get deployment nginx -o yaml                         # YAML
+kubectl get pod <name> -o json                               # JSON
+kubectl delete -f deployment.yaml                            # Удалить из файла
+kubectl delete pod,service -l app=nginx                      # По метке
+```
+
+### Редактирование ресурсов
+
+```bash
+kubectl edit deployment <name>                               # Интерактивно
+
+# Патч (strategic merge)
+kubectl patch deployment nginx -p '{"spec":{"replicas":3}}'
+
+# JSON patch
+kubectl patch pod <name> --type='json' -p='[{"op": "replace", "path": "/metadata/labels/env", "value": "prod"}]'
+
+kubectl replace -f updated-deployment.yaml                   # Замена
+```
+
+### Валидация ресурсов
+
+```bash
+kubectl diff -f deployment.yaml                              # Различия
+kubectl explain pod.spec.containers                          # Структура
+kubectl explain deployment --recursive                       # С примерами
+kubectl apply -f deployment.yaml --dry-run=client --validate=true
+```
+
+---
+
+## ⚡ Расширенные операции
+
+### Управление узлами
+
+```bash
+kubectl cordon <node>                                        # Недоступен для планирования
+kubectl uncordon <node>                                      # Доступен
+kubectl drain <node> --ignore-daemonsets --delete-emptydir-data  # Осушить
+kubectl taint nodes <node> key=value:NoSchedule              # Добавить taint
+kubectl taint nodes <node> key:NoSchedule-                   # Удалить taint
+```
+
+### Метки и аннотации
+
+```bash
+kubectl label pod <name> environment=production              # Добавить метку
+kubectl label pod <name> environment-                        # Удалить метку
+kubectl annotate pod <name> description="Frontend web server" # Аннотация
+
+# Выбор по меткам
+kubectl get pods -l environment=production
+kubectl get pods -l 'environment in (production,staging)'
+```
+
+### Прокси и аутентификация
+
+```bash
+kubectl proxy --port=8080                                    # Прокси API
+kubectl auth can-i create pods                               # Проверка прав
+kubectl auth can-i '*' '*' --as=system:serviceaccount:default:my-sa
+kubectl get pods --as=system:serviceaccount:default:my-sa    # От имени SA
+kubectl config view --raw -o jsonpath='{.users[*].name}'     # Пользователи
+```
+
+### Вспомогательные команды
+
+```bash
+kubectl wait --for=condition=Ready pod/<name> --timeout=300s     # Ожидание
+kubectl run tmp-pod --rm -i --tty --image=busybox -- /bin/sh     # Временный под
+kubectl create deployment nginx --image=nginx --dry-run=client -o yaml  # Генерация YAML
+kubectl get pods --sort-by=.metadata.creationTimestamp           # Сортировка
+```
+
+---
+
+## 📊 Производительность и мониторинг
+
+### Метрики ресурсов
+
+```bash
+kubectl top nodes --sort-by=cpu                    # Узлы по CPU
+kubectl top nodes --sort-by=memory                 # Узлы по памяти
+kubectl top pods --sort-by=cpu                     # Поды по CPU
+kubectl top pods --sort-by=memory -A               # Поды по памяти (все ns)
+kubectl top pods --containers=true                 # По контейнерам
+kubectl top pods --previous                        # История
+```
+
+### Проверки состояния
+
+```bash
+kubectl rollout status deployment/<name>                        # Статус deployment
+kubectl get pods --field-selector=status.phase=Running          # Готовые поды
+kubectl get resourcequota                                       # Квоты
+kubectl describe resourcequota <name>                           # Описание квоты
+kubectl get componentstatuses                                   # Компоненты кластера
+```
+
+### Оптимизация
+
+```bash
+kubectl describe node <name> | grep -A5 "Allocated resources:"  # Запросы/лимиты
+kubectl get pdb                                                 # Budget disruption
+kubectl get hpa                                                 # Автоскейлеры
+kubectl get networkpolicy                                       # Сетевые политики
+```
+
+### Резервное копирование
+
+```bash
+# Все ресурсы в пространстве имен
+kubectl get all -o yaml -n <namespace> > backup.yaml
+
+# Конкретный ресурс
+kubectl get deployment <name> -o yaml > deployment-backup.yaml
+
+# Список всех ресурсов
+kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get --show-kind --ignore-not-found -n <namespace>
+```
+
+---
+
+## ⚙️ Управление конфигурацией
+
+### Управление контекстом
+
+```bash
+kubectl config current-context                    # Текущий контекст
+kubectl config get-contexts                       # Список контекстов
+kubectl config use-context <name>                 # Переключение
+
 # Создание нового контекста
-kubectl config set-context dev-
-context --cluster=dev-cluster --
-user=dev-user --
-namespace=development
-Управление Kubeconfig
-Настройка kubectl для работы с несколькими кластерами.
+kubectl config set-context dev-context --cluster=dev-cluster --user=dev-user --namespace=development
+```
 
-# Просмотр объединенного kubeconfig
-kubectl config view
-# Установка информации о кластере
-kubectl config set-cluster  --
-server=https://cluster-api-url --
-certificate-
-authority=/path/to/ca.crt
-# Установка учетных данных пользователя
-kubectl config set-credentials  --
-client-
-certificate=/path/to/client.crt --
-client-key=/path/to/client.key
-# Слияние файлов kubeconfig
-KUBECONFIG=~/.kube/config:~/.
-kube/config2 kubectl config
-view --merge --flatten >
-~/.kube/merged-config
-Настройки по Умолчанию
-Установка пространств имен по умолчанию и предпочтений для операций kubectl.
+### Управление Kubeconfig
 
-# Установить пространство имен по умолчанию для
-текущего контекста
-kubectl config set-context --
-current --namespace=
-# Установить другой формат вывода по умолчанию
-kubectl config set-context --
-current --output=yaml
-# Просмотр деталей конфигурации
-kubectl config view -o
-jsonpath='{.users[*].name}'
+```bash
+kubectl config view                               # Просмотр
+
+# Установка кластера
+kubectl config set-cluster <name> --server=https://cluster-api-url --certificate-authority=/path/to/ca.crt
+
+# Установка учетных данных
+kubectl config set-credentials <name> --client-certificate=/path/to/client.crt --client-key=/path/to/client.key
+
+# Слияние файлов
+KUBECONFIG=~/.kube/config:~/.kube/config2 kubectl config view --merge --flatten > ~/.kube/merged-config
+```
+
+### Настройки по умолчанию
+
+```bash
+# Пространство имен по умолчанию
+kubectl config set-context --current --namespace=<namespace>
+
+# Формат вывода по умолчанию
+kubectl config set-context --current --output=yaml
+
+# Детали конфигурации
+kubectl config view -o jsonpath='{.users[*].name}'
 kubectl config view --raw
-Лучшие Практики и Советы
-Эффективность Команд
-Сокращения и псевдонимы для ускорения ежедневных операций.
+```
 
-# Общие псевдонимы kubectl
+---
+
+## 💡 Лучшие практики
+
+### Эффективность команд
+
+```bash
+# Псевдонимы
 alias k=kubectl
 alias kgp='kubectl get pods'
 alias kgs='kubectl get services'
 alias kgd='kubectl get deployments'
-# Использование коротких имен для ресурсов
+
+# Короткие имена ресурсов
 kubectl get po        # pods
 kubectl get svc       # services
 kubectl get deploy    # deployments
 kubectl get ns        # namespaces
 kubectl get no        # nodes
-# Наблюдение за ресурсами на предмет изменений
+
+# Наблюдение
 kubectl get pods --watch
 kubectl get events --watch
-Выбор Ресурсов
-Эффективные способы выбора и фильтрации ресурсов.
+```
 
-# Выбор по меткам
+### Выбор ресурсов
+
+```bash
+# По меткам
 kubectl get pods -l app=nginx
 kubectl get pods -l 'environment in (prod,staging)'
 kubectl get pods -l app=nginx,version!=v1.0
-# Выбор по полю
-kubectl get pods --field-selector=status.phase=Running
-kubectl get pods --field-
-selector=spec.nodeName=worker-node-1
-# Комбинирование селекторов
-kubectl get pods -l app=nginx --field-
-selector=status.phase=Running
-Форматирование Вывода
-Настройка вывода команд для лучшей читаемости и обработки.
 
-# Различные форматы вывода
+# По полю
+kubectl get pods --field-selector=status.phase=Running
+kubectl get pods --field-selector=spec.nodeName=worker-node-1
+
+# Комбинирование
+kubectl get pods -l app=nginx --field-selector=status.phase=Running
+```
+
+### Форматирование вывода
+
+```bash
+# Форматы
 kubectl get pods -o wide
 kubectl get pods -o yaml
 kubectl get pods -o json
 kubectl get pods -o name
-# Пользовательские столбцы
-kubectl get pods -o custom-
-columns=NAME:.metadata.name,STATUS:.status.phase,N
-ODE:.spec.nodeName
-# Запросы JSONPath
-kubectl get pods -o jsonpath='{.items[*].metadata.name}'
-kubectl get pods -o
-jsonpath='{.items[*].spec.containers[*].image}'
-Безопасность и Валидация
-Команды для обеспечения безопасных операций и проверки конфигураций.
 
-# Сухой запуск для предварительного просмотра изменений
+# Пользовательские столбцы
+kubectl get pods -o custom-columns=NAME:.metadata.name,STATUS:.status.phase,NODE:.spec.nodeName
+
+# JSONPath
+kubectl get pods -o jsonpath='{.items[*].metadata.name}'
+kubectl get pods -o jsonpath='{.items[*].spec.containers[*].image}'
+```
+
+### Безопасность и валидация
+
+```bash
+# Dry-run
 kubectl apply -f deployment.yaml --dry-run=client -o yaml
-# Валидация конфигурации
-kubectl apply -f deployment.yaml --validate=true --dry-
-run=client
-# Показать различия перед применением
+
+# Валидация
+kubectl apply -f deployment.yaml --validate=true --dry-run=client
+
+# Различия
 kubectl diff -f deployment.yaml
-# Принудительное удаление с периодом ожидания
-kubectl delete pod  --grace-period=0 --force
+
+# Принудительное удаление
+kubectl delete pod <name> --grace-period=0 --force
+```
+
+---
+
+<div align="center">
+
+**📚 Полезные ссылки**
+
+[Официальная документация Kubernetes](https://kubernetes.io/docs/) • [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
+
+---
+
+*Шпаргалка создана для быстрого доступа к командам kubectl*
+
+</div>
